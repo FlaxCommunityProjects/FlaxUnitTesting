@@ -6,7 +6,20 @@ namespace FlaxCommunity.UnitTesting
     /// Special type of exception that is used to terminate the test case early <seealso cref="Assert.Pass"/>
     /// </summary>
     /// <seealso cref="System.Exception" />
-    public class SuccessException : Exception { }
+    public class SuccessException : Exception
+    {
+        public SuccessException()
+        {
+        }
+
+        public SuccessException(string message) : base(message)
+        {
+        }
+
+        public SuccessException(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+    }
 
     public static class Assert
     {

@@ -1,4 +1,4 @@
-using FlaxEditor;
+﻿using FlaxEditor;
 using FlaxEditor.GUI;
 using FlaxEngine;
 using System;
@@ -36,6 +36,13 @@ namespace FlaxCommunity.UnitTesting.Editor
 
             _mmBtn = Editor.UI.MainMenu.AddButton("Unit Tests");
             _mmBtn.ContextMenu.AddButton("Run unit tests").Clicked += RunTests;
+            FlaxEditor.Scripting.ScriptsBuilder.ScriptsReloadBegin += ScriptsBuilder_ScriptsReloadBegin;
+        }
+
+        private void ScriptsBuilder_ScriptsReloadBegin()
+        {
+            // Clear type information as per warning https://docs.flaxengine.com/manual/scripting/plugins/index.html
+            _suites.Clear();
         }
 
         public override void Deinitialize()
@@ -86,10 +93,14 @@ namespace FlaxCommunity.UnitTesting.Editor
                         {
                             testMethod?.Invoke(instance, null);
                         }
+                        catch (TargetInvocationException e)
+                        {
+                            if (!(e.InnerException is SuccessException))
+                                failed = true;
+                        }
                         catch (Exception e)
                         {
-                            if (e.GetType() != typeof(SuccessException))
-                                failed = true;
+                            failed = true;
                         }
                         finally
                         {
@@ -111,10 +122,14 @@ namespace FlaxCommunity.UnitTesting.Editor
                                 if (testCase.ExpectedResult != null)
                                     failed = !testCase.ExpectedResult.Equals(result);
                             }
+                            catch (TargetInvocationException e)
+                            {
+                                if (!(e.InnerException is SuccessException))
+                                    failed = true;
+                            }
                             catch (Exception e)
                             {
-                                if (e.GetType() != typeof(SuccessException))
-                                    failed = true;
+                                failed = true;
                             }
                             finally
                             {
