@@ -1,4 +1,4 @@
-﻿using FlaxEditor;
+using FlaxEditor;
 using FlaxEditor.GUI;
 using FlaxEngine;
 using System;
@@ -27,6 +27,8 @@ namespace FlaxCommunity.UnitTesting.Editor
             Version = new Version(1, 1),
             RepositoryUrl = "https://github.com/FlaxCommunityProjects/FlaxUnitTesting"
         };
+
+        public override Type GamePluginType => typeof(SimpleUnitTestingPlugin);
 
         public override void InitializeEditor()
         {
