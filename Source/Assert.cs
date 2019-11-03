@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FlaxEngine.UnitTesting
+namespace FlaxCommunity.UnitTesting
 {
     /// <summary>
     /// Special type of exception that is used to terminate the test case early <seealso cref="Assert.Pass"/>

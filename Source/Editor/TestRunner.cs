@@ -1,11 +1,13 @@
 ﻿using FlaxEditor;
 using FlaxEditor.GUI;
+using FlaxEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using FlaxCommunity.UnitTesting;
 
-namespace FlaxEngine.UnitTesting.Editor
+namespace FlaxCommunity.UnitTesting.Editor
 {
     public class TestRunner : EditorPlugin
     {
@@ -32,7 +34,6 @@ namespace FlaxEngine.UnitTesting.Editor
 
             _mmBtn = Editor.UI.MainMenu.AddButton("Unit Tests");
             _mmBtn.ContextMenu.AddButton("Run unit tests").Clicked += RunTests;
-
         }
 
         public override void Deinitialize()

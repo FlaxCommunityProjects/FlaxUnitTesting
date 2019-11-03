@@ -1,5 +1,5 @@
 ﻿#if !FLAX_PLUGIN
-using FlaxEngine.UnitTesting;
+using FlaxCommunity.UnitTesting;
 
 namespace UnitTests
 {
