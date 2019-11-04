@@ -63,6 +63,18 @@ namespace FlaxCommunity.UnitTesting.Editor
                         _suites.Add(type);
         }
 
+        private static bool TryGetAttribute<T>(MemberInfo memberInfo, out T attribute) where T : Attribute
+        {
+            attribute = memberInfo.GetCustomAttribute<T>();
+            return attribute != null;
+        }
+
+        private static bool TryGetAttributes<T>(MemberInfo memberInfo, out List<T> attributes) where T : Attribute
+        {
+            attributes = memberInfo.GetCustomAttributes<T>().ToList();
+            return attributes.Count > 0;
+        }
+
         public static void RunTests()
         {
             GatherTests();
@@ -71,7 +83,6 @@ namespace FlaxCommunity.UnitTesting.Editor
             {
                 var suiteMethods = suite.GetMethods();
 
-                var tests = suiteMethods.Where(m => m.GetCustomAttributes<Test>().Count() > 0 || m.GetCustomAttributes<TestCase>().Count() > 0).ToArray();
                 var setup = suiteMethods.Where(m => m.GetCustomAttributes<OneTimeSetUp>().Count() > 0).FirstOrDefault();
                 var disposer = suiteMethods.Where(m => m.GetCustomAttributes<OneTimeTearDown>().Count() > 0).FirstOrDefault();
                 var beforeEach = suiteMethods.Where(m => m.GetCustomAttributes<SetUp>().Count() > 0).FirstOrDefault();
@@ -81,9 +92,12 @@ namespace FlaxCommunity.UnitTesting.Editor
 
                 setup?.Invoke(instance, null);
 
-                foreach (var testMethod in tests)
+                foreach (var testMethod in suiteMethods)
                 {
-                    if (testMethod.GetCustomAttributes<Test>().Count() > 0)
+                    bool hasTestCases = TryGetAttributes(testMethod, out List<TestCase> testCasesAttribute);
+                    bool hasTestCaseSource = TryGetAttribute(testMethod, out TestCaseSource testCaseSourceAttribute);
+
+                    if (TryGetAttribute(testMethod, out Test testAttribute))
                     {
                         bool failed = false;
                         beforeEach?.Invoke(instance, null);
@@ -102,20 +116,45 @@ namespace FlaxCommunity.UnitTesting.Editor
                         finally
                         {
                             afterEach?.Invoke(instance, null);
-                            string message = $"Test '{suite.Name} {testMethod.Name}' finished with " + (failed ? "Error" : "Success");
-                            if (failed)
-                            {
-                                Debug.LogError(message);
-                            }
-                            else
-                            {
-                                Debug.Log(message);
-                            }
+                            OutputResults(suite, testMethod, failed);
                         }
                     }
-                    else
+                    else if (hasTestCases || hasTestCaseSource)
                     {
-                        var testCases = testMethod.GetCustomAttributes<TestCase>();
+                        IEnumerable<TestCaseData> testCases = Enumerable.Empty<TestCaseData>();
+
+                        if (hasTestCases)
+                        {
+                            testCases = testCases.Concat(testCasesAttribute.Select(a => a.TestCaseData));
+                        }
+                        if (hasTestCaseSource)
+                        {
+                            var sourceClassType = testCaseSourceAttribute.SourceClassType ?? suite;
+                            object sourceObjectInstance = null;
+                            if (sourceClassType == suite || sourceClassType == null)
+                            {
+                                sourceObjectInstance = instance;
+                            }
+                            else if (!sourceClassType.IsAbstract)
+                            {
+                                sourceObjectInstance = Activator.CreateInstance(sourceClassType);
+                            }
+
+                            var sourceTestCases = (IEnumerable<TestCaseData>)(
+                                sourceClassType
+                                    .GetProperty(testCaseSourceAttribute.MemberName, typeof(IEnumerable<TestCaseData>))
+                                    ?.GetValue(sourceObjectInstance) ??
+                                sourceClassType
+                                    .GetField(testCaseSourceAttribute.MemberName)
+                                    ?.GetValue(sourceObjectInstance) ??
+                               sourceClassType
+                                    .GetMethod(testCaseSourceAttribute.MemberName)
+                                    ?.Invoke(sourceObjectInstance, null));
+
+                            testCases = testCases.Concat(sourceTestCases);
+                        }
+
+                        int testCaseCount = 0;
                         int successCount = 0;
                         foreach (var testCase in testCases)
                         {
@@ -137,26 +176,45 @@ namespace FlaxCommunity.UnitTesting.Editor
                             finally
                             {
                                 afterEach?.Invoke(instance, null);
+                                testCaseCount++;
 
                                 if (!failed)
                                     successCount++;
                             }
                         }
 
-                        int testCount = testCases.Count();
-                        string message = $"Test '{suite.Name} {testMethod.Name}' finished with {successCount}/{testCount} successfull test cases.";
-                        if (successCount < testCount)
-                        {
-                            Debug.LogError(message);
-                        }
-                        else
-                        {
-                            Debug.Log(message);
-                        }
+                        OutputResults(suite, testMethod, successCount, testCaseCount);
+
                     }
                 }
 
                 disposer?.Invoke(instance, null);
+            }
+        }
+
+        private static void OutputResults(Type suite, MethodInfo testMethod, int successCount, int testCount)
+        {
+            string message = $"Test '{suite.Name} {testMethod.Name}' finished with {successCount}/{testCount} successfull test cases.";
+            if (successCount < testCount)
+            {
+                Debug.LogError(message);
+            }
+            else
+            {
+                Debug.Log(message);
+            }
+        }
+
+        private static void OutputResults(Type suite, MethodInfo testMethod, bool failed)
+        {
+            string message = $"Test '{suite.Name} {testMethod.Name}' finished with " + (failed ? "Error" : "Success");
+            if (failed)
+            {
+                Debug.LogError(message);
+            }
+            else
+            {
+                Debug.Log(message);
             }
         }
     }
