@@ -9,7 +9,7 @@ using FlaxCommunity.UnitTesting;
 
 namespace FlaxCommunity.UnitTesting.Editor
 {
-    public class TestRunner : EditorPlugin
+    public class SimpleUnitTesting : EditorPlugin
     {
         private static readonly List<Type> _suites = new List<Type>();
         private MainMenuButton _mmBtn;
@@ -24,7 +24,7 @@ namespace FlaxCommunity.UnitTesting.Editor
             IsBeta = false,
             Name = "Simple Unit Testing",
             SupportedPlatforms = new PlatformType[] { PlatformType.Windows },
-            Version = new Version(1, 1),
+            Version = new Version(1, 2),
             RepositoryUrl = "https://github.com/FlaxCommunityProjects/FlaxUnitTesting"
         };
 

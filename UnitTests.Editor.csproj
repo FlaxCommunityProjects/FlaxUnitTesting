@@ -61,9 +61,9 @@
     <Compile Include="Cache\AssemblyInfo.cs" />
     <Compile Include="Source\Editor\Assert.cs" />
     <Compile Include="Source\Editor\ExampleClass.cs" />
+    <Compile Include="Source\Editor\SimpleUnitTesting.cs" />
     <Compile Include="Source\Editor\TestAttributes.cs" />
     <Compile Include="Source\Editor\TestCaseData.cs" />
-    <Compile Include="Source\Editor\TestRunner.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
