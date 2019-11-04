@@ -27,7 +27,7 @@ namespace FlaxCommunity.UnitTesting.Editor
             Version = new Version(1, 1),
             RepositoryUrl = "https://github.com/FlaxCommunityProjects/FlaxUnitTesting"
         };
-        
+
         public override void InitializeEditor()
         {
             base.InitializeEditor();
@@ -94,16 +94,23 @@ namespace FlaxCommunity.UnitTesting.Editor
                         catch (TargetInvocationException e)
                         {
                             if (!(e.InnerException is SuccessException))
+                            {
                                 failed = true;
-                        }
-                        catch (Exception e)
-                        {
-                            failed = true;
+                                Debug.LogException(e.InnerException);
+                            }
                         }
                         finally
                         {
                             afterEach?.Invoke(instance, null);
-                            Debug.Log($"Test '{suite.Name} {testMethod.Name}' finished with " + (failed ? "Error" : "Success"));
+                            string message = $"Test '{suite.Name} {testMethod.Name}' finished with " + (failed ? "Error" : "Success");
+                            if (failed)
+                            {
+                                Debug.LogError(message);
+                            }
+                            else
+                            {
+                                Debug.Log(message);
+                            }
                         }
                     }
                     else
@@ -123,11 +130,9 @@ namespace FlaxCommunity.UnitTesting.Editor
                             catch (TargetInvocationException e)
                             {
                                 if (!(e.InnerException is SuccessException))
+                                {
                                     failed = true;
-                            }
-                            catch (Exception e)
-                            {
-                                failed = true;
+                                }
                             }
                             finally
                             {
@@ -138,7 +143,16 @@ namespace FlaxCommunity.UnitTesting.Editor
                             }
                         }
 
-                        Debug.Log($"Test '{suite.Name} {testMethod.Name}' finished with {successCount}/{testCases.Count()} successfull test cases.");
+                        int testCount = testCases.Count();
+                        string message = $"Test '{suite.Name} {testMethod.Name}' finished with {successCount}/{testCount} successfull test cases.";
+                        if (successCount < testCount)
+                        {
+                            Debug.LogError(message);
+                        }
+                        else
+                        {
+                            Debug.Log(message);
+                        }
                     }
                 }
 
