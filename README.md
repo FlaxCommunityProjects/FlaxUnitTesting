@@ -6,4 +6,4 @@ A simple unit testing plugin for the FlaxEngine.
 To install it, simply download [the latest release](https://github.com/FlaxCommunityProjects/FlaxUnitTesting/releases) and unpack it into your `Content` folder.
 
 ## Example
-[The ExampleClass.cs](https://github.com/FlaxCommunityProjects/FlaxUnitTesting/blob/master/Source/Editor/ExampleClass.cs) contains a simple example of how to write unit tests with this plugin.
+[ExampleClass.cs](https://github.com/FlaxCommunityProjects/FlaxUnitTesting/blob/master/Source/Editor/ExampleClass.cs) contains a simple example of how to write unit tests with this plugin.
