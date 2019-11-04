@@ -1,0 +1,9 @@
+{
+	"ID": "6888874e4229953ae4692194ef19ddf2",
+	"TypeName": "FlaxEditor.Content.Settings.GameSettings",
+	"EngineBuild": 6187,
+	"Data": {
+	"ProductName": "Simple Unit Testing",
+	"FirstScene": "00000000000000000000000000000000"
+}
+}

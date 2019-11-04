@@ -1,7 +1,7 @@
 ﻿#if !FLAX_PLUGIN
-using FlaxEngine.UnitTesting;
+using FlaxCommunity.UnitTesting.Editor;
 
-namespace UnitTests
+namespace UnitTests.Editor
 {
     [TestFixture]
     internal class SimpleTests
@@ -15,7 +15,7 @@ namespace UnitTests
         [Test]
         public void ErrorTest()
         {
-            Assert.True(null != null);
+            Assert.True(1 != 1);
         }
     }
 
@@ -23,9 +23,16 @@ namespace UnitTests
     internal class SetupTests
     {
         private object Tested = null;
+        private object Database = null;
+
+        [OneTimeSetUp]
+        public void Init()
+        {
+            Database = new object { };
+        }
 
         [SetUp]
-        public void Setup()
+        public void BeforeEach()
         {
             Tested = "Test";
         }
@@ -37,8 +44,13 @@ namespace UnitTests
         }
 
         [TearDown]
+        public void AfterEach()
+        {
+        }
+
         public void Dispose()
         {
+            Database = null;
         }
     }
 

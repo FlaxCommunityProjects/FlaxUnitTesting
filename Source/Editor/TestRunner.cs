@@ -1,69 +1,81 @@
 ﻿using FlaxEditor;
 using FlaxEditor.GUI;
+using FlaxEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using FlaxCommunity.UnitTesting;
 
-namespace FlaxEngine.UnitTesting.Editor
+namespace FlaxCommunity.UnitTesting.Editor
 {
     public class TestRunner : EditorPlugin
     {
-        private static List<Type> suites = new List<Type>();
-        private MainMenuButton mmBtn;
+        private static readonly List<Type> _suites = new List<Type>();
+        private MainMenuButton _mmBtn;
 
         public override PluginDescription Description => new PluginDescription
         {
             Author = "Lukáš Jech",
-            AuthorUrl ="https://lukas.jech.me",
+            AuthorUrl = "https://lukas.jech.me",
             Category = "Unit Testing",
             Description = "Simple unit testing framework",
             IsAlpha = false,
             IsBeta = false,
             Name = "Simple Unit Testing",
-            SupportedPlatforms = new PlatformType[] {PlatformType.Windows},
-            Version = new Version(1,0),
-            RepositoryUrl = "https://github.com/klukule/flax-ut"
+            SupportedPlatforms = new PlatformType[] { PlatformType.Windows },
+            Version = new Version(1, 1),
+            RepositoryUrl = "https://github.com/FlaxCommunityProjects/FlaxUnitTesting"
         };
-
+        
         public override void InitializeEditor()
         {
             base.InitializeEditor();
 
-            mmBtn = Editor.UI.MainMenu.AddButton("Unit Tests");
-            mmBtn.ContextMenu.AddButton("Run unit tests").Clicked += RunTests;
+            _mmBtn = Editor.UI.MainMenu.AddButton("Unit Tests");
+            _mmBtn.ContextMenu.AddButton("Run unit tests").Clicked += RunTests;
+            FlaxEditor.Scripting.ScriptsBuilder.ScriptsReloadBegin += ScriptsBuilder_ScriptsReloadBegin;
+        }
 
+        private void ScriptsBuilder_ScriptsReloadBegin()
+        {
+            // Clear type information as per warning https://docs.flaxengine.com/manual/scripting/plugins/index.html
+            _suites.Clear();
         }
 
         public override void Deinitialize()
         {
             base.Deinitialize();
-            if (mmBtn != null)
+            if (_mmBtn != null)
             {
-                mmBtn.Dispose();
-                mmBtn = null;
+                _mmBtn.Dispose();
+                _mmBtn = null;
             }
         }
 
         private static void GatherTests()
         {
             Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            suites.Clear();
+            _suites.Clear();
             foreach (var assembly in assemblies)
                 foreach (var type in assembly.GetTypes())
                     if (type.GetCustomAttributes<TestFixture>().Count() > 0)
-                        suites.Add(type);
+                        _suites.Add(type);
         }
 
         public static void RunTests()
         {
             GatherTests();
 
-            foreach (var suite in suites)
+            foreach (var suite in _suites)
             {
-                var tests = suite.GetMethods().Where(m => m.GetCustomAttributes<TestCase>().Count() > 0 || m.GetCustomAttributes<Test>().Count() > 0).ToArray();
-                var setup = suite.GetMethods().Where(m => m.GetCustomAttributes<SetUp>().Count() > 0).FirstOrDefault();
-                var disposer = suite.GetMethods().Where(m => m.GetCustomAttributes<TearDown>().Count() > 0).FirstOrDefault();
+                var suiteMethods = suite.GetMethods();
+
+                var tests = suiteMethods.Where(m => m.GetCustomAttributes<Test>().Count() > 0 || m.GetCustomAttributes<TestCase>().Count() > 0).ToArray();
+                var setup = suiteMethods.Where(m => m.GetCustomAttributes<OneTimeSetUp>().Count() > 0).FirstOrDefault();
+                var disposer = suiteMethods.Where(m => m.GetCustomAttributes<OneTimeTearDown>().Count() > 0).FirstOrDefault();
+                var beforeEach = suiteMethods.Where(m => m.GetCustomAttributes<SetUp>().Count() > 0).FirstOrDefault();
+                var afterEach = suiteMethods.Where(m => m.GetCustomAttributes<TearDown>().Count() > 0).FirstOrDefault();
 
                 var instance = Activator.CreateInstance(suite);
 
@@ -71,50 +83,63 @@ namespace FlaxEngine.UnitTesting.Editor
 
                 foreach (var testMethod in tests)
                 {
-                    // Mitigates the AttributeNullException
-                    foreach (var test in testMethod.GetCustomAttributes<Test>())
+                    if (testMethod.GetCustomAttributes<Test>().Count() > 0)
                     {
                         bool failed = false;
+                        beforeEach?.Invoke(instance, null);
                         try
                         {
                             testMethod?.Invoke(instance, null);
                         }
+                        catch (TargetInvocationException e)
+                        {
+                            if (!(e.InnerException is SuccessException))
+                                failed = true;
+                        }
                         catch (Exception e)
                         {
-                            if(e.GetType() != typeof(SuccessException))
-                                failed = true;
+                            failed = true;
                         }
                         finally
                         {
+                            afterEach?.Invoke(instance, null);
                             Debug.Log($"Test '{suite.Name} {testMethod.Name}' finished with " + (failed ? "Error" : "Success"));
                         }
                     }
-
-                    var testCases = testMethod.GetCustomAttributes<TestCase>();
-                    int successCount = 0;
-                    foreach (var testCase in testCases)
+                    else
                     {
-                        bool failed = false;
-                        try
+                        var testCases = testMethod.GetCustomAttributes<TestCase>();
+                        int successCount = 0;
+                        foreach (var testCase in testCases)
                         {
-                            var result = testMethod?.Invoke(instance, testCase.Attributes);
-                            if (testCase.ExpectedResult != null)
-                                failed = !testCase.ExpectedResult.Equals(result);
-                        }
-                        catch (Exception e)
-                        {
-                            if(e.GetType() != typeof(SuccessException))
+                            bool failed = false;
+                            beforeEach?.Invoke(instance, null);
+                            try
+                            {
+                                var result = testMethod?.Invoke(instance, testCase.Attributes);
+                                if (testCase.ExpectedResult != null)
+                                    failed = !testCase.ExpectedResult.Equals(result);
+                            }
+                            catch (TargetInvocationException e)
+                            {
+                                if (!(e.InnerException is SuccessException))
+                                    failed = true;
+                            }
+                            catch (Exception e)
+                            {
                                 failed = true;
-                        }
-                        finally
-                        {
-                            if (!failed)
-                                successCount++;
-                        }
-                    }
+                            }
+                            finally
+                            {
+                                afterEach?.Invoke(instance, null);
 
-                    if(testCases.Count() > 0)
+                                if (!failed)
+                                    successCount++;
+                            }
+                        }
+
                         Debug.Log($"Test '{suite.Name} {testMethod.Name}' finished with {successCount}/{testCases.Count()} successfull test cases.");
+                    }
                 }
 
                 disposer?.Invoke(instance, null);

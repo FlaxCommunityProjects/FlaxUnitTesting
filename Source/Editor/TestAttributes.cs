@@ -1,9 +1,12 @@
 ﻿using System;
 
-namespace FlaxEngine.UnitTesting
+namespace FlaxCommunity.UnitTesting.Editor
 {
+    /// <summary>
+    /// A test case
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    public class TestCase : Attribute
+    public sealed class TestCase : Attribute
     {
         public readonly object[] Attributes;
         public object ExpectedResult { get; set; }
@@ -43,24 +46,52 @@ namespace FlaxEngine.UnitTesting
         }
     }
 
+    /// <summary>
+    /// A single test
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public class Test : Attribute
+    public sealed class Test : Attribute
     {
 
     }
 
+    /// <summary>
+    /// Executed before every single test
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public class SetUp : Attribute
+    public sealed class SetUp : Attribute
     {
     }
 
+    /// <summary>
+    /// Executed after every single test
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public class TearDown : Attribute
+    public sealed class TearDown : Attribute
     {
     }
 
+    /// <summary>
+    /// Executed before all tests 
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method)]
+    public sealed class OneTimeSetUp : Attribute
+    {
+    }
+
+    /// <summary>
+    /// Executed after all tests
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method)]
+    public sealed class OneTimeTearDown : Attribute
+    {
+    }
+
+    /// <summary>
+    /// Specifies a class as a unit test class
+    /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
-    public class TestFixture : Attribute
+    public sealed class TestFixture : Attribute
     {
     }
 }
