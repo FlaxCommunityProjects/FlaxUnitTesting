@@ -8,41 +8,64 @@ namespace FlaxCommunity.UnitTesting.Editor
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public sealed class TestCase : Attribute
     {
-        public readonly object[] Attributes;
-        public object ExpectedResult { get; set; }
+        public TestCaseData TestCaseData { get; } = new TestCaseData(null);
+        public object ExpectedResult
+        {
+            get => TestCaseData.ExpectedResult;
+            set => TestCaseData.ExpectedResult = value;
+        }
         public TestCase(object T1)
         {
-            Attributes = new object[] { T1 };
+            TestCaseData.Attributes = new object[] { T1 };
         }
 
         public TestCase(object T1, object T2)
         {
-            Attributes = new object[] { T1, T2 };
+            TestCaseData.Attributes = new object[] { T1, T2 };
         }
 
         public TestCase(object T1, object T2, object T3)
         {
-            Attributes = new object[] { T1, T2, T3 };
+            TestCaseData.Attributes = new object[] { T1, T2, T3 };
         }
 
         public TestCase(object T1, object T2, object T3, object T4)
         {
-            Attributes = new object[] { T1, T2, T3, T4 };
+            TestCaseData.Attributes = new object[] { T1, T2, T3, T4 };
         }
 
         public TestCase(object T1, object T2, object T3, object T4, object T5)
         {
-            Attributes = new object[] { T1, T2, T3, T4, T5 };
+            TestCaseData.Attributes = new object[] { T1, T2, T3, T4, T5 };
         }
 
         public TestCase(object T1, object T2, object T3, object T4, object T5, object T6)
         {
-            Attributes = new object[] { T1, T2, T3, T4, T5, T6 };
+            TestCaseData.Attributes = new object[] { T1, T2, T3, T4, T5, T6 };
         }
 
         public TestCase(object T1, object T2, object T3, object T4, object T5, object T6, object T7)
         {
-            Attributes = new object[] { T1, T2, T3, T4, T5, T6, T7 };
+            TestCaseData.Attributes = new object[] { T1, T2, T3, T4, T5, T6, T7 };
+        }
+    }
+
+    /// <summary>
+    /// Specifies a test case source method
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Field)]
+    public sealed class TestCaseSource : Attribute
+    {
+        public readonly string MemberName;
+        public readonly Type SourceClassType;
+        public TestCaseSource(string memberName) : this(null, memberName)
+        {
+        }
+
+        public TestCaseSource(Type sourceClassType, string memberName)
+        {
+            SourceClassType = sourceClassType;
+            MemberName = memberName;
         }
     }
 

@@ -1,5 +1,7 @@
 ﻿#if !FLAX_PLUGIN
+using System.Collections.Generic;
 using FlaxCommunity.UnitTesting.Editor;
+using FlaxEngine;
 
 namespace UnitTests.Editor
 {
@@ -72,6 +74,19 @@ namespace UnitTests.Editor
         [TestCase(0, 5, ExpectedResult = 5)]
         [TestCase(10, 5, ExpectedResult = 15)]
         public int ExpectedResultsTests(int a, int b)
+        {
+            return a + b;
+        }
+
+        public IEnumerable<TestCaseData> AddVectorsTestCases()
+        {
+            yield return new TestCaseData(new Vector2(0, 0), new Vector2(0, 0)).Returns(new Vector2(0, 0));
+            yield return new TestCaseData(new Vector2(3, 5), new Vector2(1, 1)).Returns(new Vector2(4, 6));
+            yield return new TestCaseData(new Vector2(1, 2), new Vector2(-1, -3)).Returns(new Vector2(0, -1));
+        }
+
+        [TestCaseSource(nameof(AddVectorsTestCases))]
+        public Vector2 AddVectorsTests(Vector2 a, Vector2 b)
         {
             return a + b;
         }
