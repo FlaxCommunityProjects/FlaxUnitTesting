@@ -1,7 +1,7 @@
 ﻿#if !FLAX_PLUGIN
-using FlaxCommunity.UnitTesting;
+using FlaxCommunity.UnitTesting.Editor;
 
-namespace UnitTests
+namespace UnitTests.Editor
 {
     [TestFixture]
     internal class SimpleTests

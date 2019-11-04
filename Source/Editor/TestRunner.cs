@@ -27,9 +27,7 @@ namespace FlaxCommunity.UnitTesting.Editor
             Version = new Version(1, 1),
             RepositoryUrl = "https://github.com/FlaxCommunityProjects/FlaxUnitTesting"
         };
-
-        public override Type GamePluginType => typeof(SimpleUnitTestingPlugin);
-
+        
         public override void InitializeEditor()
         {
             base.InitializeEditor();

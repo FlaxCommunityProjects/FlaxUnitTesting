@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FlaxCommunity.UnitTesting
+namespace FlaxCommunity.UnitTesting.Editor
 {
     /// <summary>
     /// A test case

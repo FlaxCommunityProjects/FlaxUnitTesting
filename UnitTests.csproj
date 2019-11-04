@@ -52,10 +52,6 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Source\Assert.cs" />
-    <Compile Include="Source\ExampleClass.cs" />
-    <Compile Include="Source\SimpleUnitTestingPlugin.cs" />
-    <Compile Include="Source\TestAttributes.cs" />
     <Compile Include="Cache\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
